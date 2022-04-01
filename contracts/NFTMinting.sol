@@ -10,14 +10,13 @@ contract CreatureTD is ERC721Enumerable, Ownable {
     uint256 public supply;
     string public baseExtension = ".json";
     string public notRevealedUri;
-    uint256 public cost;
+    uint256 public cost = 0;
     uint256 public maxSupply = 5555;
     uint256 public maxMintQuantity;
-    uint256 public nftPerAdressLimit = 500;
+    uint256 public nftPerAdressLimit;
     bool public paused;
     bool public revealed;
     mapping(address => uint256) public addressToBalanceMinted;
-    mapping(address => bool) public whitelisted;
 
     constructor(
         string memory _name,
@@ -33,8 +32,8 @@ contract CreatureTD is ERC721Enumerable, Ownable {
         require(paused == true, "minting is paused");
         supply = totalSupply();
         uint256 mintVariants = supply + _mintQuantity;
+        require(supply > 555, "PreSale is still on");
         require(_mintQuantity > 0, "Can't mint less than 0 NFT");
-        require(_mintQuantity <= maxMintQuantity, "Amount exceed maximum mint");
         require(mintVariants <= maxSupply, "exceed mint limit");
 
         // A user who is not the owner is expected to pay a value to be able to mint.
@@ -44,7 +43,6 @@ contract CreatureTD is ERC721Enumerable, Ownable {
                 quantityHold + _mintQuantity <= nftPerAdressLimit,
                 "max limit per address exceeded"
             );
-
             require(
                 msg.value >= _mintQuantity * cost,
                 "Insufficient amount provided"
@@ -69,5 +67,28 @@ contract CreatureTD is ERC721Enumerable, Ownable {
         paused = !paused;
     }
 
-    function presaleMint(uint256 amount) public payable {}
+    function presaleMint(uint256 _mintQuantity) public payable {
+        supply = totalSupply();
+        uint256 mintVariants = supply + _mintQuantity;
+        require(mintVariants <= 555, "exceeded presale supply");
+        require(_mintQuantity > 0, "Need to mint at leastt 1 NFT");
+        require(
+            msg.value >= _mintQuantity * cost,
+            "Insufficient amount provided"
+        );
+        for (uint256 i = 1; i <= _mintQuantity; i++) {
+            addressToBalanceMinted[msg.sender]++;
+            _safeMint(msg.sender, supply + i);
+        }
+    }
+
+
+  function withdraw(address paymentSplitters) public payable onlyOwner {
+    
+    // This will payout the owner 95% of the contract balance.
+    // Do not remove this otherwise you will not be able to withdraw the funds.
+    // =============================================================================
+    (bool os, ) = payable(paymentSplitters).call{value: address(this).balance}("");
+    require(os);
+    // =============================================================================
 }
