@@ -70,4 +70,23 @@ contract CreatureTD is ERC721Enumerable, Ownable {
     }
 
     function presaleMint(uint256 amount) public payable {}
+
+
+    function getNumOfNfts(address _owner) public view returns(uint256[] memory tokensIds_) {
+        uint256 ownedNft = balanceOf(_owner);
+        tokensIds_ = new uint256[](ownedNft);
+        for (uint256 i = 0; i < ownedNft; i++) {
+            tokensIds_[i] = tokenOfOwnerByIndex(_owner, i);
+        }
+        return tokensIds_;
+    }
+
+    function setNftHolderLimit(uint256 _limit) public onlyOwner {
+        nftPerAdressLimit = _limit;
+    }
+
+    function setCostForMint(uint256 _cost) public onlyOwner {
+        cost = _cost;
+    }
+
 }
